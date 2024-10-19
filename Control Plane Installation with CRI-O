@@ -1,0 +1,93 @@
+
+# Controller Node:
+
+The steps include setting up the environment, installing necessary packages, configuring CRI-O as the container runtime, and finally initializing the Kubernetes control plane
+
+- Here’s a summary of the key steps you completed:
+
+- **Disable Swap**: You turned off swap with **`swapoff -a`** and verified memory status.
+- **System Update**: Updated the package lists with **`apt-get update`**.
+- **Install Necessary Packages**: Installed **`software-properties-common`** and **`curl`**.
+- **Add Kubernetes and CRI-O Repositories**:
+    - Imported GPG keys for Kubernetes and CRI-O.
+    - Added the respective repositories to your sources list.
+- **Install Kubernetes Components**: Installed **`kubelet`**, **`kubeadm`**, and **`kubectl`**, along with CRI-O and other necessary packages.
+- **Start CRI-O Service**: Verified that the CRI-O service is active.
+- **Enable IP Forwarding and Load Kernel Module**: Enabled IP forwarding and loaded the `br_netfilter` module.
+- **Initialize Kubernetes**: Successfully ran `**kubeadm init****, which set up the control plane and essential components.
+- **Join worker node in cluster:** Successfully joined a worker node with '**kubeadm join'**
+
+Commands to deploy control plane: Log into the controller node and run below command
+
+###### swapoff -a
+###### apt-get update
+
+###### apt-get install -y software-properties-common curl
+
+- `Declaring Variables:-`
+###### KUBERNETES_VERSION=v1.31
+###### CRIO_VERSION=v1.31
+
+- ###### `Add the Kubernetes repository`
+###### curl -fsSL https://pkgs.k8s.io/core:/stable:/$KUBERNETES_VERSION/deb/Release.key |gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-eyring.gpg
+
+###### echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/$KUBERNETES_VERSION/deb/ /" | tee /etc/apt/sources.list.d/kubernetes.list
+
+- ###### `Add the CRI-O repository`
+###### curl -fsSL https://pkgs.k8s.io/addons:/cri-o:/stable:/$CRIO_VERSION/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/cri-o-apt-kyring.gpg
+
+###### echo "deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.gpg] https://pkgs.k8s.io/addons:/cri-o:/stable:/$CRIO_VERSION/deb/ /" | tee /etc/apt/sources.list.d/cri-o.list
+
+
+- ###### `Install the packages`
+###### apt-get update
+###### apt-get install -y cri-o kubelet kubeadm kubectl
+
+- ###### `Start CRI-O`
+###### systemctl start crio.service
+
+- ###### `**Bootstrap the cluster:-**`
+###### swapoff -a
+###### modprobe br_netfilter
+###### sysctl -w net.ipv4.ip_forward=1
+
+- `**Start the kubernet cluster initialization:-**`
+###### kubeadm init
+
+------
+Successful output will contain below things
+
+Your Kubernetes control-plane has initialized successfully!
+
+**To start using your cluster, you need to run the following as a regular user**:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+**Alternatively, if you are the root user, you can run:**
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 192.168.10.14:6443 --token ywaog0.8ln7pls72tl5plc1 \
+        --discovery-token-ca-cert-hash sha256:7120fb385f8d8d6113940faa69186ac943e1226cc08aea4527d2bb759ca9cd7f
+root@k8-controller-vm-01:~#
+
+--------
+
+###### `start using cluster by running below command as root user:-`
+
+
+###### export KUBECONFIG=/etc/kubernetes/admin.conf
+
+
+- **`Now check cluster with:-`**
+
+**kubectl cluster-info**
+**kubectl get node**
